@@ -1,5 +1,50 @@
-import pandas as pd
+import csv
+import string
+import re
+import matplotlib.pyplot as plt
 
-data = pd.read_csv('data/deepdive-bootcamp.csv')
+freqs = {}
+categories = {"misc":0, "access issues security enablement": 1, "application": 2, "hw":3, "job failures":4, "nw":5, "sw":6}
+regex = re.compile('[%s]' % re.escape(string.punctuation))
 
-print(data)
+with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newline='') as f:
+    data = csv.DictReader(f)
+    for row in data:
+        category = row['Category'].lower()
+        desc = row['short_description'].lower()
+        # remove punctuation
+        # strip spaces
+        category_clean = regex.sub('', category)
+        desc_clean = regex.sub('', desc)
+        category_clean = re.sub(r'[0-9]{3}\w+', 'NUM', category_clean)
+        desc_clean = re.sub(r'[0-9]{3}\w+', 'NUM', desc_clean)
+        desc_clean = re.sub(r' +', ' ', desc_clean)
+        category_clean = re.sub(r' +',' ', category_clean)
+        desc_tokens = desc_clean.split(' ')
+
+        if not category_clean:
+            category_enum = categories["misc"]
+        else:
+            category_enum = categories[category_clean]
+
+        # create frequency table of words in description
+        for word in desc_tokens:
+            if word not in freqs:
+                freqs[word] = 1
+            else:
+                freqs[word] += 1
+
+
+words = []
+occs = []
+for key in freqs:
+    words.append(key)
+    occs.append(freqs[key])
+x = [i for i in range(len(occs))]
+
+plt.xticks(x, words)
+plt.plot(x, occs)
+print("he")
+plt.show()
+
+
