@@ -1,17 +1,23 @@
 import csv
 import string
 import re
+import pandas as pd
+import operator
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 freqs = {}
 categories = {"misc":0, "access issues security enablement": 1, "application": 2, "hw":3, "job failures":4, "nw":5, "sw":6}
 regex = re.compile('[%s]' % re.escape(string.punctuation))
+x = []
+y = []
 
 with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newline='') as f:
     data = csv.DictReader(f)
     for row in data:
         category = row['Category'].lower()
         desc = row['short_description'].lower()
+
         # remove punctuation
         # strip spaces
         category_clean = regex.sub('', category)
@@ -27,6 +33,10 @@ with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newlin
         else:
             category_enum = categories[category_clean]
 
+        x.append(desc_clean)
+        y.append(category_enum)
+
+
         # create frequency table of words in description
         for word in desc_tokens:
             if word not in freqs:
@@ -34,6 +44,20 @@ with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newlin
             else:
                 freqs[word] += 1
 
-        desc_tokens.append(category_enum)
+freqs_sorted = sorted(freqs.items(), key=operator.itemgetter(1), reverse=True)
+word, occs= zip(*freqs_sorted)
+x = [num for num in range(len(occs))]
+#plt.margins(0.05, 0.1)
+#plt.barh(x, occs, align='center', alpha=0.5)
+sns.distplot(occs[:200], bins=50, kde=False)
+print(occs)
+plt.show()
 
 
+
+
+
+stupid_dict =  {'desc':x, 'cat':y}
+
+df = pd.DataFrame(stupid_dict)
+print(df)
