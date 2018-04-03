@@ -14,6 +14,8 @@ y = []
 
 with open('data/stop-word-list.csv') as f:
     data = csv.reader(f)
+    for row in data:
+        print(row)
 
 with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newline='') as f:
     data = csv.DictReader(f)
