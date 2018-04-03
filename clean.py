@@ -34,17 +34,6 @@ with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newlin
             else:
                 freqs[word] += 1
 
-
-words = []
-occs = []
-for key in freqs:
-    words.append(key)
-    occs.append(freqs[key])
-x = [i for i in range(len(occs))]
-
-plt.xticks(x, words)
-plt.plot(x, occs)
-print("he")
-plt.show()
+        desc_tokens.append(category_enum)
 
 
