@@ -3,8 +3,9 @@ import string
 import re
 import pandas as pd
 import operator
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-# import seaborn as sns
+import seaborn as sns
 
 freqs = {}
 categories = {"misc":0, "access issues security enablement": 1, "application": 2, "hw":3, "job failures":4, "nw":5, "sw":6}
@@ -12,8 +13,6 @@ regex = re.compile('[%s]' % re.escape(string.punctuation))
 x = []
 y = []
 
-with open('data/stop-word-list.csv') as f:
-    data = csv.reader(f)
 
 with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newline='') as f:
     data = csv.DictReader(f)
@@ -49,13 +48,9 @@ with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newlin
 
 freqs_sorted = sorted(freqs.items(), key=operator.itemgetter(1), reverse=True)
 word, occs= zip(*freqs_sorted)
-x = [num for num in range(len(occs))]
-#plt.margins(0.05, 0.1)
-#plt.barh(x, occs, align='center', alpha=0.5)
-# sns.distplot(occs[:200], bins=50, kde=False)
-print(occs)
-plt.show()
 
+df_dict = {'words':word, 'occs':occs}
+freqs_df = pd.DataFrame(df_dict)
 
 
 
@@ -63,4 +58,5 @@ plt.show()
 stupid_dict =  {'desc':x, 'cat':y}
 
 df = pd.DataFrame(stupid_dict)
-print(df)
+x_train, x_test, y_train, y_test = train_test_split(df['desc'], df['cat'], test_size=0.2, random_state=42)
+print(x_test, x_train, y_train, y_test)
