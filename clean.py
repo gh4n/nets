@@ -58,5 +58,15 @@ freqs_df = pd.DataFrame(df_dict)
 stupid_dict =  {'desc':x, 'cat':y}
 
 df = pd.DataFrame(stupid_dict)
-x_train, x_test, y_train, y_test = train_test_split(df['desc'], df['cat'], test_size=0.2, random_state=42)
-print(x_test, x_train, y_train, y_test)
+x_train, x_test1, y_train, y_test1 = train_test_split(x, y, test_size=0.2, random_state=42)
+
+x_test, x_val, y_test, y_val = train_test_split(x_test1, y_test1, test_size=0.5, random_state=42)
+
+def save_df(x, y, name):
+    df = pd.DataFrame({'text': x, 'category': y})
+    df.to_csv(name)
+
+
+save_df(x_train, y_train, 'deepdive_train.csv')
+save_df(x_test, y_test, 'deepdive_test.csv')
+save_df(x_val, y_val, 'deepdive_val.csv')
