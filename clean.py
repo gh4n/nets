@@ -4,8 +4,7 @@ import re
 import pandas as pd
 import operator
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 
 freqs = {}
 categories = {"misc":0, "access issues security enablement": 1, "application": 2, "hw":3, "job failures":4, "nw":5, "sw":6}
@@ -13,10 +12,6 @@ regex = re.compile('[%s]' % re.escape(string.punctuation))
 x = []
 y = []
 
-# with open('data/stop-word-list.csv') as f:
-#     data = csv.reader(f)
-#     for row in data:
-#         stop_words = row
 
 with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newline='') as f:
     data = csv.DictReader(f)
