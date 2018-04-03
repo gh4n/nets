@@ -13,6 +13,10 @@ regex = re.compile('[%s]' % re.escape(string.punctuation))
 x = []
 y = []
 
+# with open('data/stop-word-list.csv') as f:
+#     data = csv.reader(f)
+#     for row in data:
+#         stop_words = row
 
 with open('/home/han/Projects/accenture/nets/data/deepdive-bootcamp.csv', newline='') as f:
     data = csv.DictReader(f)
