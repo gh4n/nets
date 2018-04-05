@@ -18,8 +18,10 @@ categories = 7
 df_train = pd.read_csv('../processed/deepdive_train.csv', index_col=0)
 df_test = pd.read_csv('../processed/deepdive_test.csv', index_col=0)
 df_val = pd.read_csv('../processed/deepdive_val.csv', index_col=0)
+
 tokenizer = Tokenizer(num_words=vocab_size - 1, oov_token=None)
 tokenizer.fit_on_texts(df_train.text)
+
 X_train = pad_sequences(tokenizer.texts_to_sequences(df_train.text), maxlen=seq_len)
 X_test = pad_sequences(tokenizer.texts_to_sequences(df_test.text), maxlen=seq_len)
 X_val = pad_sequences(tokenizer.texts_to_sequences(df_val.text), maxlen=seq_len)
