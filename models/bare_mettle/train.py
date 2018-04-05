@@ -17,8 +17,11 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 def train(config, args):
 
     start_time = time.time()
-    global_step, n_checkpoints, v_acc_best = 0, 0, 0.
+    global_step, n_checkpoints, v_f1_best = 0, 0, 0.
     ckpt = tf.train.get_checkpoint_state(directories.checkpoints)
+
+    tokens, labels = Data.load_data(directories.train)
+    test_tokens, test_labels = Data.load_data(directories.test)
 
     # Build graph
     cnn = Model(config, directories, args)
@@ -40,13 +43,16 @@ def train(config, args):
                 new_saver.restore(sess, args.restore_path)
                 print('{} restored.'.format(args.restore_path))
 
-        sess.run(cnn.test_iterator.initializer)
+        sess.run(cnn.test_iterator.initializer, feed_dict={
+            cnn.test_tokens_placeholder:test_tokens,
+            cnn.test_labels_placeholder:test_labels})
 
         for epoch in range(config.num_epochs):
-            sess.run(cnn.train_iterator.initializer)
+            sess.run(cnn.train_iterator.initializer, feed_dict={cnn.tokens_placeholder:tokens, cnn.labels_placeholder:labels})
+
             # Run diagnostics
-            v_acc_best = Diagnostics.run_diagnostics(cnn, config_train, directories, sess, saver, train_handle,
-                test_handle, start_time, v_acc_best, epoch, args.name)
+            v_f1_best = Diagnostics.run_diagnostics(cnn, config_train, directories, sess, saver, train_handle,
+                test_handle, start_time, v_f1_best, epoch, args.name)
             while True:
                 try:
                     # Update weights

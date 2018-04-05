@@ -14,9 +14,11 @@ class Model():
         self.training_phase = tf.placeholder(tf.bool)
         self.rnn_keep_prob = tf.placeholder(tf.float32)
 
-        tokens, labels = Data.load_data(directories)
-        self.tokens_placeholder = tf.placeholder(tokens.dtype, tokens.shape)
-        self.labels_placeholder = tf.placeholder(labels.dtype, labels.shape)
+        self.tokens_placeholder = tf.placeholder(tokens.dtype)
+        self.labels_placeholder = tf.placeholder(labels.dtype)
+        self.test_tokens_placeholder = tf.placeholder(paths.dtype)
+        self.test_labels_placeholder = tf.placeholder(labels.dtype)
+
         steps_per_epoch = int(self.tokens_placeholder.get_shape()[0])//config.batch_size
 
         train_dataset = Data.load_dataset(directories.train, config.batch_size)
