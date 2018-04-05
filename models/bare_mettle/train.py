@@ -24,7 +24,7 @@ def train(config, args):
     test_tokens, test_labels = Data.load_data(directories.test)
 
     # Build graph
-    cnn = Model(config, directories, args)
+    cnn = Model(config, directories, tokens, labels, args=args)
     saver = tf.train.Saver()
 
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)) as sess:

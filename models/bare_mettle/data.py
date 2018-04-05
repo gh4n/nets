@@ -8,9 +8,6 @@ class Data(object):
 
     @staticmethod
     def load_data(filename):
-        # df_train = pd.read_csv('../processed/deepdive_train.csv', index_col=0)
-        # df_test = pd.read_csv('../processed/deepdive_test.csv', index_col=0)
-        # df_val = pd.read_csv('../processed/deepdive_val.csv', index_col=0)
         df = pd.read_hdf(filename, key='df').sample(frac=1).reset_index(drop=True)
 
         return df['tokens'].values, df['category'].values
@@ -27,8 +24,8 @@ class Data(object):
 
         dataset = dataset.padded_batch(
             batch_size,
-            padded_shapes=tf.TensorShape([None]),
-            padding_values=0)
+            padded_shapes=(tf.TensorShape([None]), tf.TensorShape([])),
+            padding_values=(0,0))
 
         if test:
             dataset = dataset.repeat()

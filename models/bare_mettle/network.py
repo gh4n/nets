@@ -12,7 +12,7 @@ class Network(object):
          # reshape outputs to [batch_size, max_time_steps, n_features]
         max_time = tf.shape(x)[1]
         rnn_inputs = tf.reshape(x, [-1, max_time, config.embedding_dim])
-        sequence_lengths = Utils.length(rnn_inputs)
+        sequence_lengths = Diagnostics.length(rnn_inputs)
         init = tf.contrib.layers.xavier_initializer()
 
          # Choose rnn cell type
@@ -28,7 +28,7 @@ class Network(object):
      
         cell = base_cell
 
-        if training and config.output_keep_prob < 1:
+        if config.output_keep_prob < 1:
             # rnn_inputs = tf.nn.dropout(rnn_inputs, self.keep_prob)
             fwd_cells = [tf.nn.rnn_cell.DropoutWrapper(
                 cell(**args), 

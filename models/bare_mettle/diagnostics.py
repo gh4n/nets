@@ -3,7 +3,6 @@
 import tensorflow as tf
 import os, time
 from tensorflow.python.client import device_lib
-from tfrecords import dl_cifar10, dl_cifar100
 
 class Diagnostics(object):
     

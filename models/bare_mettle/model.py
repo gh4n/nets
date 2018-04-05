@@ -7,22 +7,22 @@ from network import Network
 from data import Data
 
 class Model():
-    def __init__(self, config, directories, args):
+    def __init__(self, config, directories, tokens, labels, args):
         # Build the computational graph
         self.global_step = tf.Variable(0, trainable=False)
         self.handle = tf.placeholder(tf.string, shape=[])
         self.training_phase = tf.placeholder(tf.bool)
         self.rnn_keep_prob = tf.placeholder(tf.float32)
 
-        self.tokens_placeholder = tf.placeholder(tokens.dtype)
-        self.labels_placeholder = tf.placeholder(labels.dtype)
-        self.test_tokens_placeholder = tf.placeholder(paths.dtype)
-        self.test_labels_placeholder = tf.placeholder(labels.dtype)
+        self.tokens_placeholder = tf.placeholder(tf.int32, tokens.shape)
+        self.labels_placeholder = tf.placeholder(tf.int32, labels.shape)
+        self.test_tokens_placeholder = tf.placeholder(tf.int32)
+        self.test_labels_placeholder = tf.placeholder(tf.int32)
 
         steps_per_epoch = int(self.tokens_placeholder.get_shape()[0])//config.batch_size
 
-        train_dataset = Data.load_dataset(directories.train, config.batch_size)
-        test_dataset = Data.load_dataset(directories.test, config.batch_size, test=True)
+        train_dataset = Data.load_dataset(self.tokens_placeholder, self.labels_placeholder, config.batch_size)
+        test_dataset = Data.load_dataset(self.test_tokens_placeholder, self.test_labels_placeholder, config.batch_size, test=True)
         self.iterator = tf.contrib.data.Iterator.from_string_handle(self.handle,
                                                                     train_dataset.output_types,
                                                                     train_dataset.output_shapes)
