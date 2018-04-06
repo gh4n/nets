@@ -2,3 +2,5 @@
 *.swp
 *.un~
 data
+models/bare_mettle/checkpoints
+models/bare_mettle/tensorboard
