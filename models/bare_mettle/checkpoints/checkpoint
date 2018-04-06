@@ -1,6 +1,0 @@
-model_checkpoint_path: "crnn_alpha_epoch50.ckpt-50"
-all_model_checkpoint_paths: "best/crnn_alpha_epoch26.ckpt-26"
-all_model_checkpoint_paths: "crnn_alpha_epoch30.ckpt-30"
-all_model_checkpoint_paths: "crnn_alpha_epoch40.ckpt-40"
-all_model_checkpoint_paths: "best/crnn_alpha_epoch49.ckpt-49"
-all_model_checkpoint_paths: "crnn_alpha_epoch50.ckpt-50"
