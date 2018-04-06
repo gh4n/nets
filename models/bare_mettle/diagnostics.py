@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # Diagnostic helper functions for Tensorflow session
 import tensorflow as tf
-import os, time
 from tensorflow.python.client import device_lib
+import numpy as np
+import os, time
+from sklearn.metrics import f1_score
 
 class Diagnostics(object):
     
@@ -45,8 +47,9 @@ class Diagnostics(object):
         except tf.errors.OutOfRangeError:
             t_loss, t_acc = float('nan'), float('nan')
 
-        v_acc, v_loss, v_fl, v_summary = sess.run([model.accuracy, model.cost, model.f1, model.merge_op], feed_dict=feed_dict_test)
+        v_acc, v_loss, v_summary, y_true, y_pred = sess.run([model.accuracy, model.cost, model.merge_op, model.labels, model.pred], feed_dict=feed_dict_test)
         model.test_writer.add_summary(v_summary)
+        v_f1 = f1_score(y_true, y_pred, average='macro', labels=np.unique(y_pred))
 
         if v_f1 > v_f1_best:
             v_f1_best = v_f1

@@ -11,9 +11,11 @@ class config_train(object):
     vocab_size = 1200
     rnn_layers = 2
     embedding_dim = 128
-    rnn_cell = 'gru'
+    rnn_cell = 'layer_norm'
     hidden_units = 256
-    output_keep_prob = 0.8
+    output_keep_prob = 0.75
+    max_seq_len = 15
+    recurrent_keep_prob = 0.8
 
 class config_test(object):
     mode = 'alpha'
@@ -28,11 +30,13 @@ class config_test(object):
     embedding_dim = 128
     rnn_cell = 'gru'
     hidden_units = 256
-    output_keep_prob = 0.8
+    output_keep_prob = 0.75
+    max_seq_len = 15
+    recurrent_keep_prob = 0.8
 
 class directories(object):
-    train = 'data/deepdive_val_tokenized_train.h5' #'/var/local/tmp/jtan/cifar10/cifar10_train.tfrecord'
-    test = 'data/deepdive_val_tokenized_test.h5' #'/var/local/tmp/jtan/cifar10/cifar10_test.tfrecord'
+    train = 'data/deepdive_cleaned_tokenized_train.h5' #'/var/local/tmp/jtan/cifar10/cifar10_train.tfrecord'
+    test = 'data/deepdive_cleaned_tokenized_test.h5' #'/var/local/tmp/jtan/cifar10/cifar10_test.tfrecord'
     tensorboard = 'tensorboard'
     checkpoints = 'checkpoints'
     checkpoints_best = 'checkpoints/best'

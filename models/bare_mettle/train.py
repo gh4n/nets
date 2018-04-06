@@ -24,7 +24,7 @@ def train(config, args):
     test_tokens, test_labels = Data.load_data(directories.test)
 
     # Build graph
-    cnn = Model(config, directories, tokens, labels, args=args)
+    cnn = Model(config, directories, tokens=tokens, labels=labels, args=args)
     saver = tf.train.Saver()
 
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)) as sess:
@@ -79,7 +79,7 @@ def main(**kwargs):
     parser = argparse.ArgumentParser()
     parser.add_argument("-rl", "--restore_last", help="restore last saved model", action="store_true")
     parser.add_argument("-r", "--restore_path", help="path to model to be restored", type=str)
-    parser.add_argument("-opt", "--optimizer", default="entropy-sgd", help="Selected optimizer", type=str)
+    parser.add_argument("-opt", "--optimizer", default="adam", help="Selected optimizer", type=str)
     parser.add_argument("-n", "--name", default="text-clf", help="Checkpoint/Tensorboard label")
     args = parser.parse_args()
     config = config_train

@@ -9,8 +9,19 @@ class Data(object):
     @staticmethod
     def load_data(filename):
         df = pd.read_hdf(filename, key='df').sample(frac=1).reset_index(drop=True)
+        tokens = df['tokens']
 
-        return df['tokens'].values, df['category'].values
+        # Get lengths of each row of data
+        lens = np.array([len(tokens[i]) for i in range(len(tokens))])
+
+        # Mask of valid places in each row
+        mask = np.arange(lens.max()) < lens[:,None]
+
+        # Setup output array and put elements from data into masked positions
+        padded_tokens = np.zeros(mask.shape)
+        padded_tokens[mask] = np.hstack((tokens[:]))
+
+        return padded_tokens, df['category'].values
 
     @staticmethod
     def load_dataset(features_placeholder, labels_placeholder, batch_size, test=False):

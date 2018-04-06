@@ -14,7 +14,7 @@ class Model():
         self.training_phase = tf.placeholder(tf.bool)
         self.rnn_keep_prob = tf.placeholder(tf.float32)
 
-        self.tokens_placeholder = tf.placeholder(tf.int32, tokens.shape)
+        self.tokens_placeholder = tf.placeholder(tf.int32, [tokens.shape[0], config.max_seq_len])
         self.labels_placeholder = tf.placeholder(tf.int32, labels.shape)
         self.test_tokens_placeholder = tf.placeholder(tf.int32)
         self.test_labels_placeholder = tf.placeholder(tf.int32)
@@ -35,7 +35,7 @@ class Model():
         embedding_encoder = tf.get_variable('embeddings', [config.vocab_size, config.embedding_dim])
         word_embeddings = tf.nn.embedding_lookup(embedding_encoder, ids=self.example)
 
-        self.logits, self.pred, self.softmax = Network.birnn(word_embeddings, config, self.training_phase)
+        self.logits, self.softmax, self.pred = Network.birnn_dynamic(word_embeddings, config, self.training_phase)
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         self.cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits,
@@ -45,7 +45,7 @@ class Model():
         epoch_bounds = [64, 128, 256, 420, 512, 720, 1024]
         lr_values = [1e-3, 4e-4, 1e-4, 6e-5, 1e-5, 6e-6, 1e-6, 2e-7]
 
-        learning_rate = tf.train.piecewise_constant(self.global_step, boundaries=[s*config.steps_per_epoch for s in
+        learning_rate = tf.train.piecewise_constant(self.global_step, boundaries=[s*steps_per_epoch for s in
             epoch_bounds], values=lr_values)
 
         with tf.control_dependencies(update_ops):
@@ -66,6 +66,8 @@ class Model():
         precision, self.update_precision = tf.metrics.precision(self.labels, self.pred)
         recall, self.update_recall = tf.metrics.recall(self.labels, self.pred)
         self.f1 = 2 * precision * recall / (precision + recall)
+        self.precision = precision
+        self.recall = recall
         correct_prediction = tf.equal(self.labels, tf.cast(self.pred, tf.int32))
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
