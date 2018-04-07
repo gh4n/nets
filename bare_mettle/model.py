@@ -49,7 +49,8 @@ class Model():
 
         word_embeddings = tf.nn.embedding_lookup(embedding_encoder, ids=self.example)
 
-        self.logits, self.softmax, self.pred = arch(word_embeddings, config, self.training_phase)
+        self.logits = arch(word_embeddings, config, self.training_phase)
+        self.softmax, self.pred = tf.nn.softmax(logits_RNN), tf.argmax(logits_RNN, 1)
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         self.cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits,

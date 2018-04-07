@@ -65,9 +65,7 @@ class Network(object):
         with tf.variable_scope("fc"):
             logits_RNN = tf.layers.dense(summary_vector, units=config.n_classes, kernel_initializer=init)
         
-        smx, pred = tf.nn.softmax(logits_RNN), tf.argmax(logits_RNN, 1)
-
-        return logits_RNN, smx, pred       
+        return logits_RNN
 
     @staticmethod
     def birnn(x, config, training, attention=False):
@@ -122,9 +120,7 @@ class Network(object):
         with tf.variable_scope("fc"):
             logits_RNN = tf.layers.dense(summary_vector, units=config.n_classes, kernel_initializer=init)
         
-        smx, pred = tf.nn.softmax(logits_RNN), tf.argmax(logits_RNN, 1)
-
-        return logits_RNN, smx, pred       
+        return logits_RNN    
 
     @staticmethod
     def sequence_conv2d(x, config, training, reuse=False, actv=tf.nn.relu):
@@ -173,12 +169,10 @@ class Network(object):
         with tf.variable_scope("fc"):
             logits_CNN = tf.layers.dense(feature_vector, units=config.n_classes, kernel_initializer=init)
         
-        smx, pred = tf.nn.softmax(logits_CNN), tf.argmax(logits_CNN, 1)
-
-        return logits_CNN, smx, pred
+        return logits_CNN
 
     @staticmethod
-    def sequence_conv2d(x, config, training, reuse=False, actv=tf.nn.relu):
+    def sequence_deep_conv(x, config, training, reuse=False, actv=tf.nn.relu):
         init = tf.contrib.layers.xavier_initializer()
         kwargs = {'center':True, 'scale':True, 'training':training, 'fused':True, 'renorm':True}
         
@@ -205,7 +199,7 @@ class Network(object):
 
                 # Max over-time pooling - final size [batch_size, 1, 1, n_filters]
                 # pool_i = tf.nn.max_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
-                pool_i = tf.nn.avg_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
+                pool_i = tf.nn.avg_pool(conv_i, ksize=[1,filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
 
                 # conv_i = tf.layers.conv2d(cnn_inputs, filters=n_filters, kernel_size=[filter_size, config.embedding_dim], 
                 #     padding='valid', use_bias=True, activation=actv, kernel_initializer=init)
@@ -215,15 +209,18 @@ class Network(object):
         
         # Combine feature maps
         print([fm.get_shape().as_list() for fm in feature_maps])
-        total_filters = n_filters * len(filter_sizes)
-        feature_vector = tf.concat(feature_maps, axis=3)
-        feature_vector = tf.reshape(feature_vector, [-1, total_filters])
+        convs = tf.concat(feature_maps, axis=1)
+        print(convs.get_shape().as_list())
+
+        agg_conv_filters = [256,128]
+        convs = tf.layers.conv2d(convs, filters=agg_conv_filters[0], kernel_size=3, kernel_initializer=init, activation=actv)
+        convs = tf.layers.conv2d(convs, filters=agg_conv_filters[1], kernel_size=3, kernel_initializer=init, activation=actv)
+
+        feature_vector = tf.contrib.layers.flatten(convs)
         feature_vector = tf.layers.dropout(feature_vector, rate=1-config.conv_keep_prob, training=training)
 
         # Fully connected layer for classification
         with tf.variable_scope("fc"):
             logits_CNN = tf.layers.dense(feature_vector, units=config.n_classes, kernel_initializer=init)
         
-        smx, pred = tf.nn.softmax(logits_CNN), tf.argmax(logits_CNN, 1)
-
-        return logits_CNN, smx, pred
+        return logits_CNN
