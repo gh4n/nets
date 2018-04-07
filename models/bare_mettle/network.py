@@ -63,7 +63,7 @@ class Network(object):
         print(summary_vector.get_shape().as_list())
         # Fully connected layer for classification
         with tf.variable_scope("fc"):
-            logits_RNN = tf.layers.dense(summary_vector, units=config.vocab_size, kernel_initializer=init)
+            logits_RNN = tf.layers.dense(summary_vector, units=config.n_classes, kernel_initializer=init)
         
         smx, pred = tf.nn.softmax(logits_RNN), tf.argmax(logits_RNN, 1)
 
@@ -120,7 +120,7 @@ class Network(object):
         print(summary_vector.get_shape().as_list())
         # Fully connected layer for classification
         with tf.variable_scope("fc"):
-            logits_RNN = tf.layers.dense(summary_vector, units=config.vocab_size, kernel_initializer=init)
+            logits_RNN = tf.layers.dense(summary_vector, units=config.n_classes, kernel_initializer=init)
         
         smx, pred = tf.nn.softmax(logits_RNN), tf.argmax(logits_RNN, 1)
 
@@ -134,9 +134,10 @@ class Network(object):
         # reshape outputs to [batch_size, max_time_steps, config.embedding_dim, 1]
         max_time = tf.shape(x)[1]
         cnn_inputs = tf.expand_dims(tf.reshape(x, [-1, max_time, config.embedding_dim]), -1)
+        max_time = config.max_seq_len
 
         # Convolution + max-pooling over n-word windows
-        filter_sizes = [2,3,4,5,6]
+        filter_sizes = [3,4,5]
         n_filters = 128  # output dimensionality
         feature_maps = list()
 
@@ -149,6 +150,7 @@ class Network(object):
                 b = tf.get_variable('bias-{}'.format(filter_size), shape=[n_filters], initializer=tf.constant_initializer(0.01))
                 conv_i = tf.nn.conv2d(cnn_inputs, filter=K, strides=[1,1,1,1], padding='VALID')
                 conv_i = actv(tf.nn.bias_add(conv_i, b))
+                conv_i = tf.layers.batch_normalization(conv_i, **kwargs)
 
                 # Max over-time pooling - final size [batch_size, 1, 1, n_filters]
                 pool_i = tf.nn.max_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')

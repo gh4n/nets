@@ -7,7 +7,7 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from keras.optimizers import Adam
 
 vocab_size = 1500

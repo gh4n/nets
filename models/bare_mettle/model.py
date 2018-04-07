@@ -7,7 +7,7 @@ from network import Network
 from data import Data
 
 class Model():
-    def __init__(self, config, directories, tokens, labels, args):
+    def __init__(self, config, directories, tokens, labels, args, evaluate=False):
         # Build the computational graph
         self.global_step = tf.Variable(0, trainable=False)
         self.handle = tf.placeholder(tf.string, shape=[])
@@ -30,12 +30,23 @@ class Model():
         self.train_iterator = train_dataset.make_initializable_iterator()
         self.test_iterator = test_dataset.make_initializable_iterator()
 
-        self.example, self.labels = self.iterator.get_next()
-
         embedding_encoder = tf.get_variable('embeddings', [config.vocab_size, config.embedding_dim])
+
+        if evaluate:
+            self.example = self.tokens_placeholder
+            self.labels = self.labels_placeholder
+            word_embeddings = tf.nn.embedding_lookup(embedding_encoder, ids=self.example)
+            self.logits, self.softmax, self.pred = Network.birnn(word_embeddings, config, self.training_phase)
+            self.ema = tf.train.ExponentialMovingAverage(decay=config.ema_decay, num_updates=self.global_step)
+            correct_prediction = tf.equal(self.labels, tf.cast(self.pred, tf.int32))
+            self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+            return
+        else:
+            self.example, self.labels = self.iterator.get_next()
+
         word_embeddings = tf.nn.embedding_lookup(embedding_encoder, ids=self.example)
 
-        self.logits, self.softmax, self.pred = Network.birnn_dynamic(word_embeddings, config, self.training_phase)
+        self.logits, self.softmax, self.pred = Network.birnn(word_embeddings, config, self.training_phase)
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         self.cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits,
