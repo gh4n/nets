@@ -6,7 +6,7 @@ class config_train(object):
     num_epochs = 512
     batch_size = 128
     ema_decay = 0.999
-    learning_rate = 1e-3
+    learning_rate = 1e-4
     momentum = 0.9
     vocab_size = 1200
     rnn_layers = 2
@@ -25,7 +25,7 @@ class config_test(object):
     num_epochs = 512
     batch_size = 256
     ema_decay = 0.999
-    learning_rate = 1e-3
+    learning_rate = 1e-4
     momentum = 0.9
     vocab_size = 1200
     rnn_layers = 2

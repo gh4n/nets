@@ -27,7 +27,7 @@ def my_network(x, config, training, **kwargs):
     """
 
     # To prevent overfitting, we don't even look at the inputs!
-    return tf.random_uniform(x.shape[0], minval=0, maxval=config.n_classes, dtype=tf.int32, seed=42)
+    return tf.random_uniform([x.shape[0]], minval=0, maxval=config.n_classes, dtype=tf.int32, seed=42)
 ```
 Now open model.py and edit the first line under the Model init:
 ```python

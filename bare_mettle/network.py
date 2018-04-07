@@ -177,9 +177,9 @@ class Network(object):
         kwargs = {'center':True, 'scale':True, 'training':training, 'fused':True, 'renorm':True}
         
         # reshape outputs to [batch_size, max_time_steps, config.embedding_dim, 1]
-        max_time = tf.shape(x)[1]
-        cnn_inputs = tf.expand_dims(tf.reshape(x, [-1, max_time, config.embedding_dim]), -1)
+        # max_time = tf.shape(x)[1]
         max_time = config.max_seq_len
+        cnn_inputs = tf.expand_dims(tf.reshape(x, [-1, max_time, config.embedding_dim]), -1)
 
         # Convolution + max-pooling over n-word windows
         filter_sizes = [3,4,5]
@@ -210,12 +210,14 @@ class Network(object):
         # Combine feature maps
         print([fm.get_shape().as_list() for fm in feature_maps])
         convs = tf.concat(feature_maps, axis=1)
-        print(convs.get_shape().as_list())
+        print('before aggregated convolution:', convs.get_shape().as_list())
 
         agg_conv_filters = [256,128]
-        convs = tf.layers.conv2d(convs, filters=agg_conv_filters[0], kernel_size=3, kernel_initializer=init, activation=actv)
-        convs = tf.layers.conv2d(convs, filters=agg_conv_filters[1], kernel_size=3, kernel_initializer=init, activation=actv)
+        convs = tf.layers.conv2d(convs, filters=agg_conv_filters[0], kernel_size=[3,1], kernel_initializer=init, activation=actv)
+        convs = tf.layers.batch_normalization(convs, **kwargs)
+        convs = tf.layers.conv2d(convs, filters=agg_conv_filters[1], kernel_size=[3,1], kernel_initializer=init, activation=actv)
 
+        print('after aggregated convolution:', convs.get_shape().as_list())
         feature_vector = tf.contrib.layers.flatten(convs)
         feature_vector = tf.layers.dropout(feature_vector, rate=1-config.conv_keep_prob, training=training)
 
