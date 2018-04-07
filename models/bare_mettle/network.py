@@ -153,7 +153,8 @@ class Network(object):
                 conv_i = tf.layers.batch_normalization(conv_i, **kwargs)
 
                 # Max over-time pooling - final size [batch_size, 1, 1, n_filters]
-                pool_i = tf.nn.max_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
+                # pool_i = tf.nn.max_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
+                pool_i = tf.nn.avg_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
 
                 # conv_i = tf.layers.conv2d(cnn_inputs, filters=n_filters, kernel_size=[filter_size, config.embedding_dim], 
                 #     padding='valid', use_bias=True, activation=actv, kernel_initializer=init)
@@ -162,6 +163,7 @@ class Network(object):
                 feature_maps.append(pool_i)
         
         # Combine feature maps
+        print([fm.get_shape().as_list() for fm in feature_maps])
         total_filters = n_filters * len(filter_sizes)
         feature_vector = tf.concat(feature_maps, axis=3)
         feature_vector = tf.reshape(feature_vector, [-1, total_filters])
@@ -175,3 +177,53 @@ class Network(object):
 
         return logits_CNN, smx, pred
 
+    @staticmethod
+    def sequence_conv2d(x, config, training, reuse=False, actv=tf.nn.relu):
+        init = tf.contrib.layers.xavier_initializer()
+        kwargs = {'center':True, 'scale':True, 'training':training, 'fused':True, 'renorm':True}
+        
+        # reshape outputs to [batch_size, max_time_steps, config.embedding_dim, 1]
+        max_time = tf.shape(x)[1]
+        cnn_inputs = tf.expand_dims(tf.reshape(x, [-1, max_time, config.embedding_dim]), -1)
+        max_time = config.max_seq_len
+
+        # Convolution + max-pooling over n-word windows
+        filter_sizes = [3,4,5]
+        n_filters = 128  # output dimensionality
+        feature_maps = list()
+
+        for filter_size in filter_sizes:
+            # Each kernel extracts a specific n-gram
+            with tf.variable_scope('conv_pool2D-{}'.format(filter_size)) as scope:
+
+                fs = [filter_size, config.embedding_dim, 1, n_filters]
+                K = tf.get_variable('filter-{}'.format(filter_size), shape=fs, initializer=init)
+                b = tf.get_variable('bias-{}'.format(filter_size), shape=[n_filters], initializer=tf.constant_initializer(0.01))
+                conv_i = tf.nn.conv2d(cnn_inputs, filter=K, strides=[1,1,1,1], padding='VALID')
+                conv_i = actv(tf.nn.bias_add(conv_i, b))
+                conv_i = tf.layers.batch_normalization(conv_i, **kwargs)
+
+                # Max over-time pooling - final size [batch_size, 1, 1, n_filters]
+                # pool_i = tf.nn.max_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
+                pool_i = tf.nn.avg_pool(conv_i, ksize=[1,max_time-filter_size+1,1,1], strides=[1,1,1,1], padding='VALID')
+
+                # conv_i = tf.layers.conv2d(cnn_inputs, filters=n_filters, kernel_size=[filter_size, config.embedding_dim], 
+                #     padding='valid', use_bias=True, activation=actv, kernel_initializer=init)
+                # pool_i = tf.layers.max_pooling2d(conv_i, pool_size=[max_time-filter_size+1], strides=[1,1,1,1], padding='valid')
+
+                feature_maps.append(pool_i)
+        
+        # Combine feature maps
+        print([fm.get_shape().as_list() for fm in feature_maps])
+        total_filters = n_filters * len(filter_sizes)
+        feature_vector = tf.concat(feature_maps, axis=3)
+        feature_vector = tf.reshape(feature_vector, [-1, total_filters])
+        feature_vector = tf.layers.dropout(feature_vector, rate=1-config.conv_keep_prob, training=training)
+
+        # Fully connected layer for classification
+        with tf.variable_scope("fc"):
+            logits_CNN = tf.layers.dense(feature_vector, units=config.n_classes, kernel_initializer=init)
+        
+        smx, pred = tf.nn.softmax(logits_CNN), tf.argmax(logits_CNN, 1)
+
+        return logits_CNN, smx, pred
