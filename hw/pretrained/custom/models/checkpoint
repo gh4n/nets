@@ -1,0 +1,3 @@
+model_checkpoint_path: "/home/aaam_justin.tan/hw/handwriting-generation/summary/experiment-6/models/model-41"
+all_model_checkpoint_paths: "/home/aaam_justin.tan/hw/handwriting-generation/summary/experiment-6/models/model-40"
+all_model_checkpoint_paths: "/home/aaam_justin.tan/hw/handwriting-generation/summary/experiment-6/models/model-41"
