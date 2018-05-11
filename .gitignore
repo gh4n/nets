@@ -3,4 +3,5 @@
 *.un~
 data
 bare_mettle/checkpoints
+venv
 bare_mettle/tensorboard
